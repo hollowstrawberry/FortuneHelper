@@ -85,7 +85,7 @@ if (FortuneHelper === undefined) var FortuneHelper = {
 					FortuneHelper.ClickCookie();
 				} else {
 					for (var i in Game.buffs){
-						if (Game.buffs[i].multClick > 1 || Game.buffs[i].multCps > 100 || Game.buffs[i].name == 'Cursed finger'){
+						if (Game.buffs[i].multClick > 1 || Game.buffs[i].multCpS > 100 || Game.buffs[i].name == 'Cursed finger'){
 							FortuneHelper.ClickCookie();
 							break;
 						}
@@ -134,6 +134,7 @@ if (FortuneHelper === undefined) var FortuneHelper = {
 	GetMenuString: function() {
 		var m = CCSE.MenuHelper;
 		return "" +
+		    m.Header('Alerts') +
 			'<div class="listing">' +
 			m.ToggleButton(
 				FortuneHelper.config, 'goldensound', 'FortuneHelper_goldenSoundButton',
@@ -142,20 +143,26 @@ if (FortuneHelper === undefined) var FortuneHelper = {
 			m.ToggleButton(
 				FortuneHelper.config, 'fortunesound', 'FortuneHelper_fortuneSoundButton',
 				'Fortune Ticker Sound ON', 'Fortune Ticker Sound OFF', "FortuneHelper.Toggle") +
-			'</div><br><br><div class="listing">' +
+			'</div><br>' +
+			
+			m.Header('Autoclicker') +
+			'<div class="listing">' +
 			m.Slider(
-				'clickSlider', 'Autoclicker Speed', '[$]',
+				'clickSlider', 'Clicks Per Second', '[$]',
 				function () { return FortuneHelper.config.click; },
 				"FortuneHelper.UpdateClicker(Math.round(l('clickSlider').value)); l('clickSliderRightText').innerHTML = l('clickSlider').value;",
 				0, 30, 1) +
 			'</div><div class="listing">' +
 			m.ToggleButton(
 				FortuneHelper.config, 'clickalways', 'FortuneHelper_frenzyButton',
-				'Autoclicker Mode: Always', 'Autoclicker Mode: Only with click buffs', "FortuneHelper.Toggle") +
+				'Mode: Always active', 'Mode: Only with click buffs', "FortuneHelper.Toggle") +
 			m.ToggleButton(
 				FortuneHelper.config, 'muteclick', 'FortuneHelper_muteButton',
-				'Mute Big Cookie ON', 'Mute Big Cookie OFF', "FortuneHelper.Toggle") +
-			'</div><br><div class="listing">' +
+				'Mute Cookie ON', 'Mute Cookie OFF', "FortuneHelper.Toggle") +
+			'</div><br>' +
+			
+			m.Header('Other Clicks') +
+			'<div class="listing">' +
 			m.ToggleButton(
 				FortuneHelper.config, 'golden', 'FortuneHelper_goldenButton',
 				'Click Golden Cookies ON', 'Click Golden Cookies OFF', "FortuneHelper.Toggle") +
