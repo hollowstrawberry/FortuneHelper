@@ -100,13 +100,12 @@ if (FortuneHelper === undefined) var FortuneHelper = {
 	ClickCookie: function() {
 		// original game code with mute added in
 		var now = Date.now();
-		if (Game.OnAscend || Game.AscendTimer > 0 || Game.T < 3 || now - Game.lastClick < 1000/250) {}
-		else
+		if (!Game.OnAscend && Game.AscendTimer <= 0 && Game.T >= 3 && now - Game.lastClick >= 1000/250)
 		{
 			if (now - Game.lastClick < 1000/15)
 			{
-				Game.autoclickerDetected+=Game.fps;
-				if (Game.autoclickerDetected>=Game.fps*5) Game.Win('Uncanny clicker');
+				Game.autoclickerDetected += Game.fps;
+				if (Game.autoclickerDetected >= Game.fps*5) Game.Win('Uncanny clicker');
 			}
 			Game.loseShimmeringVeil('click');
 			var amount = amount ? amount : Game.computedMouseCps;
