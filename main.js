@@ -1,6 +1,6 @@
 if (FortuneHelper === undefined) var FortuneHelper = {
 	name: 'FortuneHelper',
-	version: '2.0',
+	version: '2.1',
 	GameVersion: '2.04',
 
 	init: function() {
@@ -14,9 +14,10 @@ if (FortuneHelper === undefined) var FortuneHelper = {
 				reindeer: 0,
 				wrinkler: 0,
 				click: 10,
-				clickonlyfrenzy: 1,
+				clickalways: 0,
 				fortunesound: 1,
-				goldensound: 1
+				goldensound: 1,
+				muteclick: 0
 			};
 		}
 		
@@ -80,20 +81,54 @@ if (FortuneHelper === undefined) var FortuneHelper = {
 		}
 		if (value > 0) {
 			FortuneHelper.clickInterval = setInterval(function() {
-				if (!FortuneHelper.config.clickonlyfrenzy) {
-					Game.ClickCookie(0);
+				if (FortuneHelper.config.clickalways) {
+					FortuneHelper.ClickCookie();
 				} else {
 					for (var i in Game.buffs){
 						if (Game.buffs[i].multClick > 1 || Game.buffs[i].multCps > 100 || Game.buffs[i].name == 'Cursed finger'){
-							Game.ClickCookie(0);
+							FortuneHelper.ClickCookie();
 							break;
 						}
 					}
 				}
-			}, 1000 / value); 
+			}, 1000/value); 
 		} else {
 			FortuneHelper.clickInterval = null;
 		}
+	},
+
+	ClickCookie: function() {
+		// original game code with mute added in
+		var now = Date.now();
+		if (Game.OnAscend || Game.AscendTimer > 0 || Game.T < 3 || now - Game.lastClick < 1000/250) {}
+		else
+		{
+			if (now - Game.lastClick < 1000/15)
+			{
+				Game.autoclickerDetected+=Game.fps;
+				if (Game.autoclickerDetected>=Game.fps*5) Game.Win('Uncanny clicker');
+			}
+			Game.loseShimmeringVeil('click');
+			var amount = amount ? amount : Game.computedMouseCps;
+			Game.Earn(amount);
+			Game.handmadeCookies += amount;
+			if (Game.prefs.particles)
+			{
+				Game.particleAdd();
+				Game.particleAdd(Game.mouseX,Game.mouseY,Math.random()*4-2,Math.random()*-2-2,Math.random()*0.5+0.75,1,2);
+			}
+			if (Game.prefs.numbers) Game.particleAdd(Game.mouseX+Math.random()*8-4,Game.mouseY-8+Math.random()*8-4,0,-2,1,4,2,'','+'+Beautify(amount,1));
+			
+			Game.runModHook('click');
+			
+			if (!FortuneHelper.config.muteclick) {
+				Game.playCookieClickSound();
+			}
+			
+			Game.cookieClicks++;
+		}
+		Game.lastClick=now;
+		Game.Click=0;
 	},
 
 	GetMenuString: function() {
@@ -113,10 +148,13 @@ if (FortuneHelper === undefined) var FortuneHelper = {
 				function () { return FortuneHelper.config.click; },
 				"FortuneHelper.UpdateClicker(Math.round(l('clickSlider').value)); l('clickSliderRightText').innerHTML = l('clickSlider').value;",
 				0, 30, 1) +
-			'</div><div class="listing">	' +
+			'</div><div class="listing">' +
 			m.ToggleButton(
-				FortuneHelper.config, 'clickonlyfrenzy', 'FortuneHelper_frenzyButton',
-				'Autoclicker Mode: Only when buffed', 'Autoclicker Mode: Normal', "FortuneHelper.Toggle") +
+				FortuneHelper.config, 'clickalways', 'FortuneHelper_frenzyButton',
+				'Autoclicker Mode: Always', 'Autoclicker Mode: Only with click buffs', "FortuneHelper.Toggle") +
+			m.ToggleButton(
+				FortuneHelper.config, 'muteclick', 'FortuneHelper_muteButton',
+				'Mute Big Cookie ON', 'Mute Big Cookie OFF', "FortuneHelper.Toggle") +
 			'</div><br><div class="listing">' +
 			m.ToggleButton(
 				FortuneHelper.config, 'golden', 'FortuneHelper_goldenButton',
