@@ -25,12 +25,12 @@ var FortuneHelper = {
 	init: function() {
 		this.isLoaded = true;
 
-		setInterval(this.LogicLoop.bind(this), 200);
+		setInterval(this.logicLoop, 200);
 
-		this.UpdateAutoclicker(this.config.click);
+		this.updateAutoclicker();
 
 		Game.customOptionsMenu.push(function() {
-			CCSE.AppendCollapsibleOptionsMenu(FortuneHelper.name, FortuneHelper.OptionsMenu());
+			CCSE.AppendCollapsibleOptionsMenu(FortuneHelper.name, FortuneHelper.optionsMenu());
 		});
 
 		CCSE.SpliceCodeIntoFunction('Game.playCookieClickSound', 2, 'if (FortuneHelper.config.muteclick) return;');
@@ -39,7 +39,7 @@ var FortuneHelper = {
 	load: function(str) {
 		const config = JSON.parse(str);
 		for(const c in config) this.config[c] = config[c];
-		this.UpdateAutoclicker(this.config.click);
+		this.updateAutoclicker();
 	},
 
 	save: function() {
@@ -52,7 +52,7 @@ var FortuneHelper = {
 		}
 	},
 
-	LogicLoop: function() {
+	logicLoop: function() {
 		// Fortune tickers
 		if (Game.TickerEffect && Game.TickerEffect.type === 'fortune'){
 			if (this.config.fortune && (this.config.fortuneall || (Game.TickerEffect.sub !== 'fortuneGC' && Game.TickerEffect.sub !== 'fortuneCPS'))){
@@ -90,7 +90,8 @@ var FortuneHelper = {
 		}
 	},
 
-	UpdateAutoclicker: function(value) {
+	updateAutoclicker: function() {
+		const value = this.config.click;
 		if (this.clickInterval != null) {
 			clearInterval(this.clickInterval);
 		}
@@ -117,44 +118,48 @@ var FortuneHelper = {
 
 
 
-	/* Options Menu */
+	/* Menu */
 
-	OptionsMenu: function() {
+	optionsMenu: function() {
 		return `
-		${CCSE.MenuHelper.Header('Sounds')}
+		${this.header('Sounds')}
 		<div class="listing">
-			${this.Button('goldensound', 'Golden Cookie Alert ON (override)', 'Golden Cookie Alert OFF (default)')}
+			${this.button('goldensound', 'Golden Cookie Alert ON (override)', 'Golden Cookie Alert OFF (default)')}
 		</div><div class="listing">
-			${this.Button('fortunesound', 'Fortune Ticker Alert ON', 'Fortune Ticker Alert OFF')}
+			${this.button('fortunesound', 'Fortune Ticker Alert ON', 'Fortune Ticker Alert OFF')}
 		</div><div class="listing">
-			${this.Button('muteclick', 'Mute Big Cookie ON', 'Mute Big Cookie OFF')}
+			${this.button('muteclick', 'Mute Big Cookie ON', 'Mute Big Cookie OFF')}
 		</div>
 		<br>
-		${CCSE.MenuHelper.Header('Autoclicker')}
+		${this.header('Autoclicker')}
 		<div class="listing">
-			${this.Slider('click', 'Clicks Per Second', 0, 30)}
+			${this.slider('click', 'Clicks Per Second', 0, 30)}
 		</div><div class="listing">
-			${this.Button('clickalways', 'Mode: Always active', 'Mode: Only active during click buffs')}
+			${this.button('clickalways', 'Mode: Always active', 'Mode: Only active during big buffs')}
 		</div>
 		<br>
-		${CCSE.MenuHelper.Header('Other Clicks')}
+		${this.header('Other Clicks')}
 		<div class="listing">
-			${this.Button('golden', 'Click Golden Cookies ON', 'Click Golden Cookies OFF')}
-			${this.Button('alsowrath', 'Include Wrath Cookies', 'Exclude Wrath Cookies')}
+			${this.button('golden', 'Click Golden Cookies ON', 'Click Golden Cookies OFF')}
+			${this.button('alsowrath', 'Include Wrath Cookies', 'Exclude Wrath Cookies')}
 		</div><div class="listing">
-			${this.Button('fortune', 'Click Fortune Tickers ON', 'Click Fortune Tickers OFF')}
-			${this.Button('fortuneall', 'Include Buffs', 'Unlockables Only')}
+			${this.button('fortune', 'Click Fortune Tickers ON', 'Click Fortune Tickers OFF')}
+			${this.button('fortuneall', 'Include Buffs', 'Unlockables Only')}
 		</div><div class="listing">
-			${this.Button('reindeer', 'Click Reindeer ON', 'Click Reindeer OFF')}
+			${this.button('reindeer', 'Click Reindeer ON', 'Click Reindeer OFF')}
 		</div><div class="listing">
-			${this.Button('wrinkler', 'Pop Wrinklers ON', 'Pop Wrinklers OFF')}
+			${this.button('wrinkler', 'Pop Wrinklers ON', 'Pop Wrinklers OFF')}
 		</div>`;
 	},
 
-	Slider: function(config, text, min, max) {
-		const name = `FortuneHelper${config}Slider`;
+	header: function(title) {
+		return `<div class="listing" style="padding: 5px 16px; opacity: 0.7; font-size: 17px; font-family: Kavoon, Georgia, serif;">${title}</div>`
+	},
+
+	slider: function(config, text, min, max) {
+		const name = `FortuneHelper${config}slider`;
 		const value = this.config[config];
-		const callback = `FortuneHelper.SliderCallback('${config}', '${name}');`
+		const callback = `FortuneHelper.sliderCallback('${config}', '${name}');`
 		return `
 		<div class="sliderBox">
 			<div style="float:left;">${text}</div>
@@ -164,22 +169,22 @@ var FortuneHelper = {
 		</div>`;
 	},
 
-	SliderCallback: function(config, slider) {
+	sliderCallback: function(config, slider) {
 		const value = Math.round(l(slider).value);
 		l(slider+'Value').innerHTML = value;
 		this.config[config] = value;
 
-		if (config === 'click') this.UpdateAutoclicker(value);
+		if (config === 'click') this.updateAutoclicker();
 	},
 
-	Button: function(config, texton, textoff) {
-		const name = `FortuneHelper${config}Button`;
-		const callback = `FortuneHelper.ButtonCallback('${config}', '${name}', '${texton}', '${textoff}');`
+	button: function(config, texton, textoff) {
+		const name = `FortuneHelper${config}button`;
+		const callback = `FortuneHelper.buttonCallback('${config}', '${name}', '${texton}', '${textoff}');`
 		const value = this.config[config];
 		return `<a class="${value ? 'option' : 'option off'}" id="${name}" ${Game.clickStr}="${callback}">${value ? texton : textoff}</a>`
 	},
 
-	ButtonCallback: function(config, button, texton, textoff) {
+	buttonCallback: function(config, button, texton, textoff) {
 		const value = !this.config[config];
 		this.config[config] = value;
 		l(button).innerHTML = value ? texton : textoff
@@ -188,6 +193,12 @@ var FortuneHelper = {
 	},
 };
 
+// Bind methods
+for (func of Object.getOwnPropertyNames(FortuneHelper).filter(m => typeof FortuneHelper[m] === 'function')){
+	FortuneHelper[func] = FortuneHelper[func].bind(FortuneHelper);
+}
+
+// Load mod
 if(!FortuneHelper.isLoaded){
 	if(CCSE && CCSE.isLoaded){
 		FortuneHelper.launch();
@@ -195,6 +206,6 @@ if(!FortuneHelper.isLoaded){
 	else{
 		if(!CCSE) var CCSE = {};
 		if(!CCSE.postLoadHooks) CCSE.postLoadHooks = [];
-		CCSE.postLoadHooks.push(FortuneHelper.launch.bind(FortuneHelper));
+		CCSE.postLoadHooks.push(FortuneHelper.launch);
 	}
 }
