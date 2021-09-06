@@ -17,11 +17,14 @@ let FortuneHelper = {
 		muteclick: 0
 	},
 
+	isLoaded: false,
 	playedfortune: false,
 	playedgolden: false,
 	clickInterval: null,
 
 	init: function() {
+		FortuneHelper.isLoaded = true;
+		
 		setInterval(FortuneHelper.LogicLoop, 200);
 
 		FortuneHelper.UpdateAutoclicker(FortuneHelper.config.click);
