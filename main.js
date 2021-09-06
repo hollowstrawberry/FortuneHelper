@@ -24,7 +24,7 @@ let FortuneHelper = {
 
 	init: function() {
 		FortuneHelper.isLoaded = true;
-		
+
 		setInterval(FortuneHelper.LogicLoop, 200);
 
 		FortuneHelper.UpdateAutoclicker(FortuneHelper.config.click);
@@ -38,7 +38,7 @@ let FortuneHelper = {
 
 	load: function(str) {
 		const config = JSON.parse(str);
-		for(var c in config) FortuneHelper.config[c] = config[c];
+		for(const c in config) FortuneHelper.config[c] = config[c];
 		FortuneHelper.UpdateAutoclicker(FortuneHelper.config.click);
 	},
 
@@ -66,7 +66,7 @@ let FortuneHelper = {
 		}
 
 		// Golden cookies and reindeers
-		var anygolden = false;
+		let anygolden = false;
 		for (const i in Game.shimmers) { const shimmer = Game.shimmers[i];
 			if (shimmer.type == 'golden') {
 				anygolden = true;
@@ -99,8 +99,10 @@ let FortuneHelper = {
 				if (FortuneHelper.config.clickalways) {
 					Game.ClickCookie(0);
 				} else {
+					let totalMultCPS = 1;
 					for (const i in Game.buffs){ const buff = Game.buffs[i];
-						if (buff.multClick > 1 || buff.multCpS > 100 || buff.name == 'Cursed finger'){
+						if (buff.multCpS > 1) totalMultCPS *= buff.multCpS;
+						if (totalMultCPS > 50 || buff.multClick > 1 || buff.name == 'Cursed finger'){
 							Game.ClickCookie(0);
 							break;
 						}
@@ -169,7 +171,7 @@ let FortuneHelper = {
 		l(slider+'Value').innerHTML = value;
 		FortuneHelper.config[config] = value;
 
-		if (config == 'click') FortuneHelper.UpdateAutoclicker(value);
+		if (config === 'click') FortuneHelper.UpdateAutoclicker(value);
 	},
 
 	Button: (config, texton, textoff) => {
