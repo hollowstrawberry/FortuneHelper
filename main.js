@@ -1,39 +1,52 @@
-if (FortuneHelper === undefined) var FortuneHelper = {
+let FortuneHelper = {
 	name: 'FortuneHelper',
-	version: '2.1',
+	version: '2.3',
 	GameVersion: '2.04',
 
-	init: function() {
-		FortuneHelper.isLoaded = 1;
-		if (FortuneHelper.config == null) {
-			FortuneHelper.config = {
-				fortune: 0,
-				fortuneall: 0,
-				golden: 0,
-				alsowrath: 1,
-				reindeer: 0,
-				wrinkler: 0,
-				click: 10,
-				clickalways: 0,
-				fortunesound: 1,
-				goldensound: 1,
-				muteclick: 0
-			};
-		}
-		
-		Game.customOptionsMenu.push(function(){
-			CCSE.AppendCollapsibleOptionsMenu(FortuneHelper.name, FortuneHelper.GetMenuString());
-		});
+	config: {
+		fortune: 0,
+		fortuneall: 0,
+		golden: 0,
+		alsowrath: 1,
+		reindeer: 0,
+		wrinkler: 0,
+		click: 10,
+		clickalways: 0,
+		fortunesound: 1,
+		goldensound: 1,
+		muteclick: 0
+	},
 
-		FortuneHelper.playedfortune = false;
-		FortuneHelper.playedgolden = false;
+	playedfortune: false,
+	playedgolden: false,
+	clickInterval: null,
+
+	init: function() {
 		setInterval(FortuneHelper.LogicLoop, 200);
 
-		FortuneHelper.clickInterval = null;
-		FortuneHelper.UpdateClicker(FortuneHelper.config.click);
-		
-		if (Game.prefs.popups) Game.Popup(FortuneHelper.name + ' loaded!');
-		else Game.Notify(FortuneHelper.name + ' loaded!', '', '', 1, 1);
+		FortuneHelper.UpdateAutoclicker(FortuneHelper.config.click);
+
+		Game.customOptionsMenu.push(function() {
+			CCSE.AppendCollapsibleOptionsMenu(FortuneHelper.name, FortuneHelper.OptionsMenu());
+		});
+
+		CCSE.SpliceCodeIntoFunction('Game.playCookieClickSound', 2, 'if (FortuneHelper.config.muteclick) return;');
+	},
+
+	load: function(str) {
+		const config = JSON.parse(str);
+		for(var c in config) FortuneHelper.config[c] = config[c];
+		FortuneHelper.UpdateAutoclicker(FortuneHelper.config.click);
+	},
+
+	save: function() {
+		return JSON.stringify(FortuneHelper.config);
+	},
+
+	launch: function() {
+		if (CCSE.ConfirmGameVersion(FortuneHelper.name, FortuneHelper.version, FortuneHelper.GameVersion)) {
+			Game.registerMod(FortuneHelper.name, FortuneHelper);
+		}
 	},
 
 	LogicLoop: function() {
@@ -48,10 +61,10 @@ if (FortuneHelper === undefined) var FortuneHelper = {
 		} else {
 			FortuneHelper.playedfortune = false;
 		}
+
 		// Golden cookies and reindeers
 		var anygolden = false;
-		for (var i in Game.shimmers) {
-			var shimmer = Game.shimmers[i];
+		for (const i in Game.shimmers) { const shimmer = Game.shimmers[i];
 			if (shimmer.type == 'golden') {
 				anygolden = true;
 				if (FortuneHelper.config.golden && (!shimmer.wrath || FortuneHelper.config.alsowrath)) {
@@ -65,28 +78,27 @@ if (FortuneHelper === undefined) var FortuneHelper = {
 			}
 		}
 		if (!anygolden) FortuneHelper.playedgolden = false;
+
 		// Wrinklers
-		for (var i in Game.wrinklers) {
-			var wrinkler = Game.wrinklers[i];
+		for (const i in Game.wrinklers) { const wrinkler = Game.wrinklers[i];
 			if (FortuneHelper.config.wrinkler && wrinkler.hp > 0.5 && wrinkler.sucked > 0.5) {
 				wrinkler.hp = -10;
 			}
 		}
 	},
 
-	UpdateClicker: function(value) {
-		FortuneHelper.config.click = value;
+	UpdateAutoclicker: function(value) {
 		if (FortuneHelper.clickInterval != null) {
 			clearInterval(FortuneHelper.clickInterval);
 		}
 		if (value > 0) {
 			FortuneHelper.clickInterval = setInterval(function() {
 				if (FortuneHelper.config.clickalways) {
-					FortuneHelper.ClickCookie();
+					Game.ClickCookie(0);
 				} else {
-					for (var i in Game.buffs){
-						if (Game.buffs[i].multClick > 1 || Game.buffs[i].multCpS > 100 || Game.buffs[i].name == 'Cursed finger'){
-							FortuneHelper.ClickCookie();
+					for (const i in Game.buffs){ const buff = Game.buffs[i];
+						if (buff.multClick > 1 || buff.multCpS > 100 || buff.name == 'Cursed finger'){
+							Game.ClickCookie(0);
 							break;
 						}
 					}
@@ -97,125 +109,80 @@ if (FortuneHelper === undefined) var FortuneHelper = {
 		}
 	},
 
-	ClickCookie: function() {
-		// original game code with mute added in
-		var now = Date.now();
-		if (!Game.OnAscend && Game.AscendTimer <= 0 && Game.T >= 3 && now - Game.lastClick >= 1000/250)
-		{
-			if (now - Game.lastClick < 1000/15)
-			{
-				Game.autoclickerDetected += Game.fps;
-				if (Game.autoclickerDetected >= Game.fps*5) Game.Win('Uncanny clicker');
-			}
-			Game.loseShimmeringVeil('click');
-			var amount = amount ? amount : Game.computedMouseCps;
-			Game.Earn(amount);
-			Game.handmadeCookies += amount;
-			if (Game.prefs.particles)
-			{
-				Game.particleAdd();
-				Game.particleAdd(Game.mouseX,Game.mouseY,Math.random()*4-2,Math.random()*-2-2,Math.random()*0.5+0.75,1,2);
-			}
-			if (Game.prefs.numbers) Game.particleAdd(Game.mouseX+Math.random()*8-4,Game.mouseY-8+Math.random()*8-4,0,-2,1,4,2,'','+'+Beautify(amount,1));
-			
-			Game.runModHook('click');
-			
-			if (!FortuneHelper.config.muteclick) {
-				Game.playCookieClickSound();
-			}
-			
-			Game.cookieClicks++;
-		}
-		Game.lastClick=now;
-		Game.Click=0;
+
+
+
+	/* Options Menu */
+
+	OptionsMenu: function() {
+		const f = FortuneHelper;
+		const h = CCSE.MenuHelper;
+		return `
+		${h.Header('Sounds')}
+		<div class="listing">
+			${f.Button('goldensound', 'Golden Cookie Alert ON (override)', 'Golden Cookie Alert OFF (default)')}
+		</div><div class="listing">
+			${f.Button('fortunesound', 'Fortune Ticker Alert ON', 'Fortune Ticker Alert OFF')}
+		</div><div class="listing">
+			${f.Button('muteclick', 'Mute Big Cookie ON', 'Mute Big Cookie OFF')}
+		</div>
+		<br>
+		${h.Header('Autoclicker')}
+		<div class="listing">
+			${f.Slider('click', 'Clicks Per Second', 0, 30)}
+		</div><div class="listing">
+			${f.Button('clickalways', 'Mode: Always active', 'Mode: Only active during click buffs')}
+		</div>
+		<br>
+		${h.Header('Other Clicks')}
+		<div class="listing">
+			${f.Button('golden', 'Click Golden Cookies ON', 'Click Golden Cookies OFF')}
+			${f.Button('alsowrath', 'Include Wrath Cookies', 'Exclude Wrath Cookies')}
+		</div><div class="listing">
+			${f.Button('fortune', 'Click Fortune Tickers ON', 'Click Fortune Tickers OFF')}
+			${f.Button('fortuneall', 'Include Buffs', 'Unlockables Only')}
+		</div><div class="listing">
+			${f.Button('reindeer', 'Click Reindeer ON', 'Click Reindeer OFF')}
+		</div><div class="listing">
+			${f.Button('wrinkler', 'Pop Wrinklers ON', 'Pop Wrinklers OFF')}
+		</div>`;
 	},
 
-	GetMenuString: function() {
-		var m = CCSE.MenuHelper;
-		return "" +
-		    m.Header('Alerts') +
-			'<div class="listing">' +
-			m.ToggleButton(
-				FortuneHelper.config, 'goldensound', 'FortuneHelper_goldenSoundButton',
-				'Golden Cookie Sound ON (override)', 'Golden Cookie Sound OFF (default)', "FortuneHelper.Toggle") +
-			'</div><div class="listing">' +
-			m.ToggleButton(
-				FortuneHelper.config, 'fortunesound', 'FortuneHelper_fortuneSoundButton',
-				'Fortune Ticker Sound ON', 'Fortune Ticker Sound OFF', "FortuneHelper.Toggle") +
-			'</div><br>' +
-			
-			m.Header('Autoclicker') +
-			'<div class="listing">' +
-			m.Slider(
-				'clickSlider', 'Clicks Per Second', '[$]',
-				function () { return FortuneHelper.config.click; },
-				"FortuneHelper.UpdateClicker(Math.round(l('clickSlider').value)); l('clickSliderRightText').innerHTML = l('clickSlider').value;",
-				0, 30, 1) +
-			'</div><div class="listing">' +
-			m.ToggleButton(
-				FortuneHelper.config, 'clickalways', 'FortuneHelper_frenzyButton',
-				'Mode: Always active', 'Mode: Only with click buffs', "FortuneHelper.Toggle") +
-			m.ToggleButton(
-				FortuneHelper.config, 'muteclick', 'FortuneHelper_muteButton',
-				'Mute Cookie ON', 'Mute Cookie OFF', "FortuneHelper.Toggle") +
-			'</div><br>' +
-			
-			m.Header('Other Clicks') +
-			'<div class="listing">' +
-			m.ToggleButton(
-				FortuneHelper.config, 'golden', 'FortuneHelper_goldenButton',
-				'Click Golden Cookies ON', 'Click Golden Cookies OFF', "FortuneHelper.Toggle") +
-			m.ToggleButton(
-				FortuneHelper.config, 'alsowrath', 'FortuneHelper_wrathButton',
-				'Include Wrath Cookies', 'Exclude Wrath Cookies', "FortuneHelper.Toggle") +
-			'</div><div class="listing">' +
-			m.ToggleButton(
-				FortuneHelper.config, 'fortune', 'FortuneHelper_fortuneButton',
-				'Click Fortune Tickers ON', 'Click Fortune Tickers OFF', "FortuneHelper.Toggle") +
-			m.ToggleButton(
-				FortuneHelper.config, 'fortuneall', 'FortuneHelper_fortuneallButton',
-				'Include Buffs', 'Unlockables Only', "FortuneHelper.Toggle") +
-			'</div><div class="listing">' +
-			m.ToggleButton(
-				FortuneHelper.config, 'reindeer', 'FortuneHelper_reindeerButton',
-				'Click Reindeer ON', 'Click Reindeer OFF', "FortuneHelper.Toggle") +
-			'</div><div class="listing">' +
-			m.ToggleButton(
-				FortuneHelper.config, 'wrinkler', 'FortuneHelper_wrinklerButton',
-				'Pop Wrinklers ON', 'Pop Wrinklers OFF', "FortuneHelper.Toggle") +
-			'</div>';
+	Slider: function(config, text, min, max) {
+		const name = `FortuneHelper${config}Slider`;
+		const value = FortuneHelper.config[config];
+		const callback = `FortuneHelper.SliderCallback('${config}', '${name}');`
+		return `
+		<div class="sliderBox">
+			<div style="float:left;">${text}</div>
+			<div style="float:right;" id="${name}Value">${value}</div>
+			<input class="slider" id="${name}" style="clear:both;" type="range" min="${min}" max="${max}" step="1" value="${value}" 
+				onchange="${callback}" oninput="${callback}" onmouseup="PlaySound(\'snd/tick.mp3\');"/>
+		</div>`;
 	},
 
-	Toggle: function(prefName, button, on, off, invert) {
-		if(FortuneHelper.config[prefName]){
-			l(button).innerHTML = off;
-			FortuneHelper.config[prefName] = 0;
-		}
-		else{
-			l(button).innerHTML = on;
-			FortuneHelper.config[prefName] = 1;
-		}
-		l(button).className = 'option' + ((FortuneHelper.config[prefName] ^ invert) ? '' : ' off');
+	SliderCallback: function(config, slider) {
+		const value = Math.round(l(slider).value);
+		l(slider+'Value').innerHTML = value;
+		FortuneHelper.config[config] = value;
+
+		if (config == 'click') FortuneHelper.UpdateAutoclicker(value);
 	},
 
-	save: function() {
-		return JSON.stringify(FortuneHelper.config);
+	Button: (config, texton, textoff) => {
+		const name = `FortuneHelper${config}Button`;
+		const callback = `FortuneHelper.ButtonCallback('${config}', '${name}', '${texton}', '${textoff}');`
+		const value = FortuneHelper.config[config];
+		return `<a class="${value ? 'option' : 'option off'}" id="${name}" ${Game.clickStr}="${callback}">${value ? texton : textoff}</a>`
 	},
 
-	load: function(str) {
-		var config = JSON.parse(str);
-		for(var pref in config){
-			FortuneHelper.config[pref] = config[pref];
-		}
-		
-		FortuneHelper.UpdateClicker(FortuneHelper.config.click);
+	ButtonCallback: function(config, button, texton, textoff) {
+		const value = !FortuneHelper.config[config];
+		FortuneHelper.config[config] = value;
+		l(button).innerHTML = value ? texton : textoff
+		l(button).className = value ? 'option' : 'option off'
+		PlaySound('snd/tick.mp3');
 	},
-
-	launch: function() {
-		if(CCSE.ConfirmGameVersion(FortuneHelper.name, FortuneHelper.version, FortuneHelper.GameVersion)) {
-			Game.registerMod(FortuneHelper.name, FortuneHelper);
-		}
-	}
 };
 
 if(!FortuneHelper.isLoaded){
