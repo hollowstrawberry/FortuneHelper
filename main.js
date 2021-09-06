@@ -54,8 +54,8 @@ let FortuneHelper = {
 
 	LogicLoop: function() {
 		// Fortune tickers
-		if (Game.TickerEffect && Game.TickerEffect.type == 'fortune'){
-			if (FortuneHelper.config.fortune && (FortuneHelper.config.fortuneall || (Game.TickerEffect.sub != 'fortuneGC' && Game.TickerEffect.sub != 'fortuneCPS'))){
+		if (Game.TickerEffect && Game.TickerEffect.type === 'fortune'){
+			if (FortuneHelper.config.fortune && (FortuneHelper.config.fortuneall || (Game.TickerEffect.sub !== 'fortuneGC' && Game.TickerEffect.sub !== 'fortuneCPS'))){
 				Game.tickerL.click();
 			} else if (FortuneHelper.config.fortunesound && !FortuneHelper.playedfortune) {
 				PlaySound('snd/fortune.mp3');
@@ -68,7 +68,7 @@ let FortuneHelper = {
 		// Golden cookies and reindeers
 		let anygolden = false;
 		for (const i in Game.shimmers) { const shimmer = Game.shimmers[i];
-			if (shimmer.type == 'golden') {
+			if (shimmer.type === 'golden') {
 				anygolden = true;
 				if (FortuneHelper.config.golden && (!shimmer.wrath || FortuneHelper.config.alsowrath)) {
 					shimmer.pop();
@@ -76,7 +76,7 @@ let FortuneHelper = {
 					PlaySound('snd/chime.mp3');
 					FortuneHelper.playedgolden = true;
 				}
-			} else if (shimmer.type == 'reindeer' && FortuneHelper.config.reindeer) {
+			} else if (shimmer.type === 'reindeer' && FortuneHelper.config.reindeer) {
 				shimmer.pop();
 			}
 		}
