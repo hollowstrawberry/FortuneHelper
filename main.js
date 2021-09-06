@@ -1,7 +1,7 @@
 var FortuneHelper = {
     name: 'FortuneHelper',
     version: '2.4',
-    GameVersion: '2.04',
+    gameVersion: '2.04',
 
     config: {
         fortune: 0,
@@ -43,8 +43,8 @@ var FortuneHelper = {
     },
 
     launch: function() {
-        if (CCSE.ConfirmGameVersion(this.name, this.version, this.GameVersion)) {
-            Game.registerMod(this.name, FortuneHelper);
+        if (CCSE.ConfirmGameVersion(this.name, this.version, this.gameVersion)) {
+            Game.registerMod(this.name, this);
         }
     },
 
