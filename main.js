@@ -1,6 +1,6 @@
 var FortuneHelper = {
 	name: 'FortuneHelper',
-	version: '2.3',
+	version: '2.4',
 	GameVersion: '2.04',
 
 	config: {
@@ -10,6 +10,8 @@ var FortuneHelper = {
 		alsowrath: 1,
 		reindeer: 0,
 		wrinkler: 0,
+		research: 0,
+		pledge: 0,
 		click: 10,
 		clickalways: 0,
 		fortunesound: 1,
@@ -23,17 +25,11 @@ var FortuneHelper = {
 	clickInterval: null,
 
 	init: function() {
-		this.isLoaded = true;
-
+		Game.customOptionsMenu.push(this.addOptionsMenu);
 		setInterval(this.logicLoop, 200);
-
 		this.updateAutoclicker();
-
-		Game.customOptionsMenu.push(function() {
-			CCSE.AppendCollapsibleOptionsMenu(FortuneHelper.name, FortuneHelper.optionsMenu());
-		});
-
 		CCSE.SpliceCodeIntoFunction('Game.playCookieClickSound', 2, 'if (FortuneHelper.config.muteclick) return;');
+		this.isLoaded = true;
 	},
 
 	load: function(str) {
@@ -54,8 +50,8 @@ var FortuneHelper = {
 
 	logicLoop: function() {
 		// Fortune tickers
-		if (Game.TickerEffect && Game.TickerEffect.type === 'fortune'){
-			if (this.config.fortune && (this.config.fortuneall || (Game.TickerEffect.sub !== 'fortuneGC' && Game.TickerEffect.sub !== 'fortuneCPS'))){
+		if (Game.TickerEffect && Game.TickerEffect.type === 'fortune') {
+			if (this.config.fortune && (this.config.fortuneall || (Game.TickerEffect.sub !== 'fortuneGC' && Game.TickerEffect.sub !== 'fortuneCPS'))) {
 				Game.tickerL.click();
 			} else if (this.config.fortunesound && !this.playedfortune) {
 				PlaySound('snd/fortune.mp3');
@@ -86,6 +82,15 @@ var FortuneHelper = {
 		for (const i in Game.wrinklers) { const wrinkler = Game.wrinklers[i];
 			if (this.config.wrinkler && wrinkler.hp > 0.5 && wrinkler.sucked > 0.5) {
 				wrinkler.hp = -10;
+			}
+		}
+
+		// Research
+		if (this.config.research || this.config.pledge) {
+			for (const upgrade of Game.UpgradesInStore) {
+				if (this.config.research && upgrade.pool === 'tech' || this.config.pledge && upgrade.name === 'Elder Pledge' || upgrade.name === 'Sacrificial rolling pins') {
+					upgrade.buy(1);
+				}
 			}
 		}
 	},
@@ -120,8 +125,8 @@ var FortuneHelper = {
 
 	/* Menu */
 
-	optionsMenu: function() {
-		return `
+	addOptionsMenu: function() {
+		const body = `
 		${this.header('Sounds')}
 		<div class="listing">
 			${this.button('goldensound', 'Golden Cookie Alert ON (override)', 'Golden Cookie Alert OFF (default)')}
@@ -141,15 +146,20 @@ var FortuneHelper = {
 		${this.header('Other Clicks')}
 		<div class="listing">
 			${this.button('golden', 'Click Golden Cookies ON', 'Click Golden Cookies OFF')}
-			${this.button('alsowrath', 'Include Wrath Cookies', 'Exclude Wrath Cookies')}
+			${this.button('alsowrath', 'Mode: Include Wrath Cookies', 'Mode: Exclude Wrath Cookies')}
 		</div><div class="listing">
 			${this.button('fortune', 'Click Fortune Tickers ON', 'Click Fortune Tickers OFF')}
-			${this.button('fortuneall', 'Include Buffs', 'Unlockables Only')}
+			${this.button('fortuneall', 'Mode: All Fortunes', 'Mode: Unlockable Fortunes Only')}
+		</div><div class="listing">
+			${this.button('research', 'Auto-Research ON', 'Auto-Research OFF')}
+			${this.button('pledge', 'Auto-Pledge ON', 'Auto-Pledge OFF')}
 		</div><div class="listing">
 			${this.button('reindeer', 'Click Reindeer ON', 'Click Reindeer OFF')}
 		</div><div class="listing">
 			${this.button('wrinkler', 'Pop Wrinklers ON', 'Pop Wrinklers OFF')}
 		</div>`;
+
+		CCSE.AppendCollapsibleOptionsMenu(this.name, body)
 	},
 
 	header: function(title) {
