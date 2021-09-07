@@ -5,4 +5,4 @@ This configurable mod contains various utilities like a golden cookie alert, aut
 
 This mod does not disable achievements.
 
-https://www.reddit.com/r/CookieClicker/comments/pi1iz2/i_made_a_mod_for_the_steam_version_fortunehelper/
+https://steamcommunity.com/sharedfiles/filedetails/?id=2595513328
