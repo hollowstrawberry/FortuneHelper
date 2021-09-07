@@ -3,7 +3,7 @@
 	"ID": "Fortune Helper",
 	"Author": "orchidalloy",
 	"Description": "Configurable mod with various utilities like golden/fortune cookie alerts and autoclicking.",
-	"ModVersion": 2.4,
+	"ModVersion": 2.5,
 	"GameVersion": 2.04,
 	"Date": "5/09/2021",
 	"Dependencies": ["CCSE"],

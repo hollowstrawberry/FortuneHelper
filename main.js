@@ -1,6 +1,6 @@
-var FortuneHelper = {
+if (!FortuneHelper) var FortuneHelper = {
     name: 'FortuneHelper',
-    version: '2.4',
+    version: '2.5',
     gameVersion: '2.04',
 
     config: {
@@ -42,7 +42,7 @@ var FortuneHelper = {
         return JSON.stringify(this.config);
     },
 
-    launch: function() {
+    register: function() {
         if (CCSE.ConfirmGameVersion(this.name, this.version, this.gameVersion)) {
             Game.registerMod(this.name, this);
         }
@@ -55,8 +55,8 @@ var FortuneHelper = {
                 Game.tickerL.click();
             } else if (this.config.fortunesound && !this.playedfortune) {
                 PlaySound('snd/fortune.mp3');
+                this.playedfortune = true;
             }
-            this.playedfortune = true;
         } else {
             this.playedfortune = false;
         }
@@ -79,9 +79,11 @@ var FortuneHelper = {
         if (!anygolden) this.playedgolden = false;
 
         // Wrinklers
-        for (const i in Game.wrinklers) { const wrinkler = Game.wrinklers[i];
-            if (this.config.wrinkler && wrinkler.hp > 0.5 && wrinkler.sucked > 0.5) {
-                wrinkler.hp = -10;
+        if (this.config.wrinkler) {
+            for (const i in Game.wrinklers) { const wrinkler = Game.wrinklers[i];
+                if (wrinkler.hp > 0.5 && wrinkler.sucked > 0.5 && wrinkler.type !== 1) { // preserve shiny wrinklers
+                    wrinkler.hp = -10;
+                }
             }
         }
 
@@ -213,11 +215,11 @@ for (func of Object.getOwnPropertyNames(FortuneHelper).filter(m => typeof Fortun
 // Load mod
 if(!FortuneHelper.isLoaded){
     if(CCSE && CCSE.isLoaded){
-        FortuneHelper.launch();
+        FortuneHelper.register();
     }
     else{
         if(!CCSE) var CCSE = {};
         if(!CCSE.postLoadHooks) CCSE.postLoadHooks = [];
-        CCSE.postLoadHooks.push(FortuneHelper.launch);
+        CCSE.postLoadHooks.push(FortuneHelper.register);
     }
 }
