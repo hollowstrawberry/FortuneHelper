@@ -1,6 +1,6 @@
 if (!FortuneHelper) var FortuneHelper = {
     name: 'FortuneHelper',
-    version: '2.51',
+    version: '2.6',
     gameVersion: '2.042',
 
     config: {
@@ -16,7 +16,8 @@ if (!FortuneHelper) var FortuneHelper = {
         clickalways: 0,
         fortunesound: 1,
         goldensound: 1,
-        muteclick: 0
+        muteclick: 0,
+        chocolateegg: 1
     },
 
     isLoaded: false,
@@ -29,6 +30,7 @@ if (!FortuneHelper) var FortuneHelper = {
         setInterval(this.logicLoop, 200);
         this.updateAutoclicker();
         CCSE.SpliceCodeIntoFunction('Game.playCookieClickSound', 2, 'if (FortuneHelper.config.muteclick) return;');
+        CCSE.SpliceCodeIntoFunction('Game.Ascend', 5, 'FortuneHelper.preAscend();');
         this.isLoaded = true;
     },
 
@@ -97,6 +99,12 @@ if (!FortuneHelper) var FortuneHelper = {
                 }
             }
         }
+
+        // Chocolate egg
+        if (this.config.chocolateegg && Game.Has('Inspired checklist') && !Game.Upgrades['Chocolate egg'].isVaulted()){
+            Game.Upgrades['Chocolate egg'].vault();
+            Game.upgradesToRebuild=1;
+        }
     },
 
     updateAutoclicker: function() {
@@ -125,6 +133,33 @@ if (!FortuneHelper) var FortuneHelper = {
         }
     },
 
+    preAscend: function() {
+        const egg = Game.Upgrades['Chocolate egg'];
+        if (this.config.chocolateegg && egg.unlocked && !egg.bought) {
+            // Switch aura
+            if (Game.dragonLevel >= 8 && !Game.hasAura('Earth Shatterer')) {
+                const earthShatterer = 5, realityBending = 18;
+                Game.SelectingDragonAura = earthShatterer;
+                if (Game.dragonAura === realityBending) Game.dragonAura2 = earthShatterer;
+                else Game.dragonAura = earthShatterer;
+                let highestBuilding = null;
+                for (var i in Game.Objects) {
+                    if (Game.Objects[i].amount) highestBuilding = Game.Objects[i];
+                }
+                if (highestBuilding) {
+                    Game.ObjectsById[highestBuilding.id].sacrifice(1);
+                }
+            }
+            // Sell buildings
+            for (var i in Game.Objects) {
+                const building = Game.Objects[i];
+                if (building.amount) building.sell(building.amount);
+            }
+            // Profit
+            egg.buy(1);
+        }
+    },
+
 
 
 
@@ -141,14 +176,14 @@ if (!FortuneHelper) var FortuneHelper = {
             ${this.button('muteclick', 'Mute Big Cookie ON', 'Mute Big Cookie OFF')}
         </div>
         <br>
-        ${this.header('Autoclicker')}
+        ${this.header('Auto-Clicker')}
         <div class="listing">
             ${this.slider('click', 'Clicks Per Second', 0, 30)}
         </div><div class="listing">
             ${this.button('clickalways', 'Mode: Always active', 'Mode: Only active during big buffs')}
         </div>
         <br>
-        ${this.header('Other Clicks')}
+        ${this.header('Other Clickers')}
         <div class="listing">
             ${this.button('golden', 'Click Golden Cookies ON', 'Click Golden Cookies OFF')}
             ${this.button('alsowrath', 'Mode: Include Wrath Cookies', 'Mode: Exclude Wrath Cookies')}
@@ -157,11 +192,18 @@ if (!FortuneHelper) var FortuneHelper = {
             ${this.button('fortuneall', 'Mode: All Fortunes', 'Mode: Unlockable Fortunes Only')}
         </div><div class="listing">
             ${this.button('research', 'Auto-Research ON', 'Auto-Research OFF')}
+        </div><div class="listing">
             ${this.button('pledge', 'Auto-Pledge ON', 'Auto-Pledge OFF')}
         </div><div class="listing">
             ${this.button('reindeer', 'Click Reindeer ON', 'Click Reindeer OFF')}
         </div><div class="listing">
             ${this.button('wrinkler', 'Pop Wrinklers ON', 'Pop Wrinklers OFF')}
+        </div>
+        <br>
+        ${this.header('Advanced')}
+        <div class="listing">
+            ${this.button('chocolateegg', 'Automatic Chocolate Egg ON', 'Automatic Chocolate Egg OFF')}
+            <label>Vaults the chocolate egg upgrade if unlocked. On ascend, buys it at max efficiency to get you some extra prestige levels.</label>
         </div>`;
 
         CCSE.AppendCollapsibleOptionsMenu(this.name, body)
