@@ -63,7 +63,7 @@ if (!FortuneHelper) var FortuneHelper = {
 
         // Golden cookies and reindeers
         let anygolden = false;
-        for (const i in Game.shimmers) { const shimmer = Game.shimmers[i];
+        for (const shimmer of Game.shimmers) {
             if (shimmer.type === 'golden') {
                 anygolden = true;
                 if (this.config.golden && (!shimmer.wrath || this.config.alsowrath)) {
@@ -80,7 +80,7 @@ if (!FortuneHelper) var FortuneHelper = {
 
         // Wrinklers
         if (this.config.wrinkler) {
-            for (const i in Game.wrinklers) { const wrinkler = Game.wrinklers[i];
+            for (const wrinkler of Game.wrinklers) {
                 if (wrinkler.hp > 0.5 && wrinkler.sucked > 0.5 && wrinkler.type !== 1) { // preserve shiny wrinklers
                     wrinkler.hp = -10;
                 }
@@ -110,7 +110,8 @@ if (!FortuneHelper) var FortuneHelper = {
                     Game.ClickCookie(0);
                 } else {
                     let totalMultCPS = 1;
-                    for (const i in Game.buffs){ const buff = Game.buffs[i];
+                    for (const i in Game.buffs) { // Can't use "of" because it's not an array
+                        const buff = Game.buffs[i];
                         if (buff.multCpS > 1) totalMultCPS *= buff.multCpS;
                         if (totalMultCPS > 50 || buff.multClick > 1 || buff.name == 'Cursed finger'){
                             Game.ClickCookie(0);
