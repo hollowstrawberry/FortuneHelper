@@ -186,17 +186,15 @@ if (!FortuneHelper) var FortuneHelper = {
         ${this.header('Other Clickers')}
         <div class="listing">
             ${this.button('golden', 'Click Golden Cookies ON', 'Click Golden Cookies OFF')}
-            ${this.button('alsowrath', 'Mode: Include Wrath Cookies', 'Mode: Exclude Wrath Cookies')}
+            ${this.button('alsowrath', 'Mode: Include Wrath Cookies', 'Mode: Exclude Wrath Cookies', 9)}
         </div><div class="listing">
             ${this.button('fortune', 'Click Fortune Tickers ON', 'Click Fortune Tickers OFF')}
-            ${this.button('fortuneall', 'Mode: All Fortunes', 'Mode: Unlockable Fortunes Only')}
+            ${this.button('fortuneall', 'Mode: All Fortunes', 'Mode: Unlockable Fortunes Only', 9)}
         </div><div class="listing">
             ${this.button('research', 'Auto-Research ON', 'Auto-Research OFF')}
-        </div><div class="listing">
             ${this.button('pledge', 'Auto-Pledge ON', 'Auto-Pledge OFF')}
         </div><div class="listing">
             ${this.button('reindeer', 'Click Reindeer ON', 'Click Reindeer OFF')}
-        </div><div class="listing">
             ${this.button('wrinkler', 'Pop Wrinklers ON', 'Pop Wrinklers OFF')}
         </div>
         <br>
@@ -234,11 +232,12 @@ if (!FortuneHelper) var FortuneHelper = {
         if (config === 'click') this.updateAutoclicker();
     },
 
-    button: function(config, texton, textoff) {
+    button: function(config, texton, textoff, size) {
         const name = `FortuneHelper${config}button`;
         const callback = `FortuneHelper.buttonCallback('${config}', '${name}', '${texton}', '${textoff}');`
         const value = this.config[config];
-        return `<a class="${value ? 'option' : 'option off'}" id="${name}" ${Game.clickStr}="${callback}">${value ? texton : textoff}</a>`
+        return `<a class="${value ? 'option' : 'option off'}" id="${name}" style="font-size:${size ? size : 12}px;"
+            ${Game.clickStr}="${callback}">${value ? texton : textoff}</a>`
     },
 
     buttonCallback: function(config, button, texton, textoff) {
