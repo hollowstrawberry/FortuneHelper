@@ -68,9 +68,9 @@ if (!FortuneHelper) var FortuneHelper = {
         for (const shimmer of Game.shimmers) {
             if (shimmer.type === 'golden') {
                 anygolden = true;
-                if (this.config.golden && (!shimmer.wrath || this.config.alsowrath)) {
+                if (this.config.golden && (!shimmer.wrath || shimmer.force === 'cookie storm drop' || this.config.alsowrath)) {
                     shimmer.pop();
-                } else if (this.config.goldensound && !Game.chimeType && !this.playedgolden) {
+                } else if (this.config.goldensound && !Game.chimeType && !this.playedgolden && shimmer.force !== 'cookie storm drop') {
                     PlaySound('snd/chime.mp3');
                     this.playedgolden = true;
                 }
