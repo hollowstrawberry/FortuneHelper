@@ -106,9 +106,9 @@ if (!FortuneHelper) var FortuneHelper = {
         if (this.config.sugarlump) {
           if (!Game.canLumps()) return;
           var age=Date.now()-Game.lumpT;
-			    if (age<Game.lumpMatureAge) return;
-			    else if (age<Game.lumpRipeAge && onlyripe) Game.clickLump();
-			    else if (age<Game.lumpOverripeAge) Game.clickLump();
+          if (age<Game.lumpMatureAge) return;
+          else if (age<Game.lumpRipeAge && onlyripe) Game.clickLump();
+          else if (age<Game.lumpOverripeAge) Game.clickLump();
         }
 
         // Chocolate egg
