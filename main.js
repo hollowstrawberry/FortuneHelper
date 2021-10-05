@@ -18,7 +18,8 @@ if (!FortuneHelper) var FortuneHelper = {
         goldensound: 1,
         muteclick: 0,
         chocolateegg: 1,
-        sugarlump: 0
+        sugarlump: 0,
+        onlyripe: 0
     },
 
     isLoaded: false,
@@ -106,7 +107,7 @@ if (!FortuneHelper) var FortuneHelper = {
           if (!Game.canLumps()) return;
           var age=Date.now()-Game.lumpT;
 			    if (age<Game.lumpMatureAge) return;
-			    else if (age<Game.lumpRipeAge) Game.clickLump();
+			    else if (age<Game.lumpRipeAge && onlyripe) Game.clickLump();
 			    else if (age<Game.lumpOverripeAge) Game.clickLump();
         }
 
@@ -207,7 +208,8 @@ if (!FortuneHelper) var FortuneHelper = {
             ${this.button('reindeer', 'Click Reindeer ON', 'Click Reindeer OFF')}
             ${this.button('wrinkler', 'Pop Wrinklers ON', 'Pop Wrinklers OFF')}
         </div><div class="listing">
-            ${this.button('sugarlump', 'Auto-Harvest Sugar Lump ON', 'Auto-Harvest Sugar Lump OFF')}
+            ${this.button('sugarlump', 'Auto-Harvest Lump ON', 'Auto-Harvest Lump OFF')}
+            ${this.button('onlyripe', 'Mode: When Matured', 'Mode: Ripe Only', 9)}
         </div>
         <br>
         ${this.header('Advanced')}
