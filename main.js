@@ -1,7 +1,7 @@
 if (!FortuneHelper) var FortuneHelper = {
     name: 'FortuneHelper',
-    version: '2.61',
-    gameVersion: '2.042',
+    version: '2.7',
+    gameVersion: '2.043',
 
     config: {
         fortune: 0,
